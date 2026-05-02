@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SIR Nasca — Sistema Integral de Riego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="shell.jsx"></script>
+<script type="text/babel" src="dashboard.jsx"></script>
+<script type="text/babel" src="padron.jsx"></script>
+<script type="text/babel" src="modules.jsx"></script>
+<script type="text/babel" src="finance.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "institucional",
+  "density": "comfortable",
+  "showAlerts": true
+}/*EDITMODE-END*/;
+
+const App = () => {
+  const [logged, setLogged] = React.useState(true);
+  const [role, setRole] = React.useState(SIRDATA.ROLES[0]);
+  const [active, setActive] = React.useState("dashboard");
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  React.useEffect(() => {
+    document.documentElement.dataset.theme =
+      tweaks.theme === "agro" ? "agro" :
+      tweaks.theme === "neutro" ? "neutro" : "";
+  }, [tweaks.theme]);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === "__route_to_login") setLogged(false);
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  if (!logged) {
+    return <Login onLogin={(r) => { setRole(r); setLogged(true); setActive("dashboard"); }} />;
+  }
+
+  const Page = {
+    dashboard: Dashboard,
+    padron: Padron,
+    parcelas: Parcelas,
+    canales: Canales,
+    tomas: Tomas,
+    pagos: Pagos,
+    reportes: Reportes,
+    auditoria: Auditoria,
+    config: Configuracion,
+  }[active] || Dashboard;
+
+  return (
+    <>
+      <div className="app">
+        <Sidebar active={active} onNav={setActive} />
+        <div className="main">
+          <Topbar active={active} role={role} onChangeRole={setRole} />
+          <Page role={role} onNav={setActive} />
+        </div>
+      </div>
+
+      <TweaksPanel title="Tweaks · SIR Nasca">
+        <TweakSection title="Apariencia">
+          <TweakRadio
+            label="Tema de color"
+            value={tweaks.theme}
+            onChange={v => setTweak("theme", v)}
+            options={[
+              {value:"institucional", label:"Institucional"},
+              {value:"agro", label:"Agro-tech"},
+              {value:"neutro", label:"Neutro"},
+            ]}
+          />
+          <div style={{fontSize:11,color:"var(--text-3)",lineHeight:1.5,marginTop:4}}>
+            <strong>Institucional:</strong> navy + papel, government-feel.<br/>
+            <strong>Agro-tech:</strong> terracota + verde polvoriento.<br/>
+            <strong>Neutro:</strong> grises + acento azul SaaS.
+          </div>
+        </TweakSection>
+        <TweakSection title="Navegación">
+          <TweakButton onClick={()=>setActive("dashboard")}>Ir a Dashboard</TweakButton>
+          <TweakButton onClick={()=>setActive("padron")}>Abrir Padrón</TweakButton>
+          <TweakButton onClick={()=>setActive("pagos")}>Abrir Pagos</TweakButton>
+          <TweakButton onClick={()=>{ setLogged(false); }}>Ver pantalla de login</TweakButton>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

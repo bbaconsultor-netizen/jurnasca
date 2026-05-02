@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SIR Nasca — Sistema Integral de Riego (v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles-v2.css">
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="shell.jsx"></script>
+<script type="text/babel" src="dashboard.jsx"></script>
+<script type="text/babel" src="padron.jsx"></script>
+<script type="text/babel" src="modules.jsx"></script>
+<script type="text/babel" src="finance.jsx"></script>
+<script type="text/babel" src="permissions.jsx"></script>
+<script type="text/babel" src="shell-v2.jsx"></script>
+<script type="text/babel" src="padron-v2.jsx"></script>
+<script type="text/babel" src="modules-v2.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "institucional"
+}/*EDITMODE-END*/;
+
+const ReadOnlyBanner = ({ role }) => (
+  <div className="readonly-banner">
+    <Icon name="lock" size={13}/>
+    Modo solo lectura — el rol <strong style={{margin:"0 4px"}}>{role.role}</strong> no puede crear ni editar registros.
+  </div>
+);
+
+const App = () => {
+  const [logged, setLogged] = React.useState(true);
+  const [role, setRole] = React.useState(SIRDATA.ROLES[0]);
+  const [active, setActive] = React.useState("dashboard");
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [openCreate, setOpenCreate] = React.useState(false);
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  React.useEffect(() => {
+    document.documentElement.dataset.theme =
+      tweaks.theme === "agro" ? "agro" :
+      tweaks.theme === "neutro" ? "neutro" : "";
+  }, [tweaks.theme]);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === "__route_to_login") setLogged(false);
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // Reset to dashboard if current module not allowed for new role
+  React.useEffect(() => {
+    if (!canModule(role, active)) setActive("dashboard");
+  }, [role]);
+
+  if (!logged) {
+    return <Login onLogin={(r) => { setRole(r); setLogged(true); setActive("dashboard"); }} />;
+  }
+
+  const readonly = !can(role, "write");
+
+  // Page selection — use V2 versions where available
+  const pageMap = {
+    dashboard: <Dashboard role={role} onNav={setActive} />,
+    padron: <PadronV2 role={role} openCreate={openCreate} setOpenCreate={setOpenCreate}/>,
+    parcelas: <ParcelasV2 role={role} openCreate={openCreate} setOpenCreate={setOpenCreate}/>,
+    canales: <CanalesV2 role={role} openCreate={openCreate} setOpenCreate={setOpenCreate}/>,
+    tomas: <TomasV2 role={role} openCreate={openCreate} setOpenCreate={setOpenCreate}/>,
+    pagos: <Pagos role={role}/>,
+    reportes: <Reportes role={role}/>,
+    auditoria: <Auditoria />,
+    config: <Configuracion />,
+  };
+  const PageEl = pageMap[active] || pageMap.dashboard;
+
+  return (
+    <>
+      <div className="app">
+        <SidebarV2 active={active} onNav={setActive} role={role} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+        <div className="main">
+          <TopbarV2 active={active} role={role} onChangeRole={setRole} onMenu={()=>setMobileOpen(true)} />
+          {readonly && <ReadOnlyBanner role={role}/>}
+          {PageEl}
+        </div>
+      </div>
+
+      <TweaksPanel title="Tweaks · SIR Nasca">
+        <TweakSection title="Apariencia">
+          <TweakRadio
+            label="Tema de color"
+            value={tweaks.theme}
+            onChange={v => setTweak("theme", v)}
+            options={[
+              {value:"institucional", label:"Institucional"},
+              {value:"agro", label:"Agro-tech"},
+              {value:"neutro", label:"Neutro"},
+            ]}
+          />
+        </TweakSection>
+        <TweakSection title="Rol activo">
+          <TweakRadio
+            label="Cambiar rol"
+            value={role.id}
+            onChange={(id) => { const r = SIRDATA.ROLES.find(x=>x.id===id); if (r) setRole(r); }}
+            options={SIRDATA.ROLES.map(r => ({ value: r.id, label: r.role }))}
+          />
+          <div style={{fontSize:11,color:"var(--text-3)",lineHeight:1.5,marginTop:4}}>
+            <strong>Consulta</strong> = solo lectura. <strong>Tesorería</strong> sólo accede a Pagos. <strong>Padrón</strong> y <strong>Área Técnica</strong> ven sólo sus módulos.
+          </div>
+        </TweakSection>
+        <TweakSection title="Navegación">
+          <TweakButton onClick={()=>setActive("dashboard")}>Ir a Dashboard</TweakButton>
+          <TweakButton onClick={()=>{setActive("padron");setTimeout(()=>setOpenCreate(true),50);}}>Abrir formulario · Nuevo regante</TweakButton>
+          <TweakButton onClick={()=>{setActive("parcelas");setTimeout(()=>setOpenCreate(true),50);}}>Abrir formulario · Nueva parcela</TweakButton>
+          <TweakButton onClick={()=>{ setLogged(false); }}>Ver pantalla de login</TweakButton>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

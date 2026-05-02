@@ -1,0 +1,113 @@
+/* SIR Nasca v2 — additions: modal, form-grid, mobile, role banner */
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(11,37,69,.18);
+  z-index: 101;
+  display: flex; flex-direction: column;
+  animation: modal-in 160ms cubic-bezier(.2,.8,.2,1);
+}
+@keyframes modal-in { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+.modal-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.modal-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.modal-foot {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex; justify-content: flex-end; gap: 8px;
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 14px; }
+
+/* Read-only mode banner for Consulta role */
+.readonly-banner {
+  background: var(--info-bg);
+  color: var(--info);
+  padding: 8px 16px;
+  font-size: 12px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+
+/* Disabled buttons (no permission) */
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.45; pointer-events: none;
+}
+
+/* Mobile sidebar toggle */
+.menu-toggle { display: none; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 200ms;
+    width: 260px;
+    box-shadow: 4px 0 20px rgba(0,0,0,.2);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .menu-toggle { display: grid; }
+  .topbar { padding: 0 14px; gap: 10px; }
+  .topbar-search { display: none; }
+  .crumbs { font-size: 11px; }
+  .crumbs span:not(.current):not(.sep) { display: none; }
+  .crumbs .sep { display: none; }
+  .role-pill { padding: 4px 6px; }
+  .role-meta { display: none; }
+  .role-pill svg { display: none; }
+  .page { padding: 16px 14px 40px; }
+  .page-head { gap: 8px; }
+  .page-title { font-size: 20px; }
+  .page-subtitle { font-size: 12px; }
+  .page-actions .btn span, .page-actions .btn { font-size: 12px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .kpi { padding: 10px 12px; }
+  .kpi-value { font-size: 20px; }
+  .row-grid.c2 { grid-template-columns: 1fr !important; }
+  .form-grid { grid-template-columns: 1fr !important; }
+  .form-grid > .field { grid-column: span 1 !important; }
+  .drawer { width: 100% !important; }
+  .modal { width: calc(100vw - 16px); max-height: calc(100vh - 24px); }
+  table.data thead th, table.data tbody td { padding: 8px 10px; font-size: 12px; }
+  .table-mobile-hide { display: none; }
+  .toolbar { gap: 6px; padding: 8px 10px; }
+  .toolbar .filter-chip { font-size: 11px; height: 24px; }
+  .login-shell { grid-template-columns: 1fr; }
+  .login-left { display: none; }
+  .login-right { padding: 32px 20px; }
+}
+
+.menu-toggle {
+  width: 32px; height: 32px;
+  border-radius: var(--radius);
+  align-items: center; justify-content: center;
+  color: var(--text-2);
+}
+.menu-toggle:hover { background: var(--surface-2); }
+
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(11,37,69,.45);
+  z-index: 55;
+}
+@media (max-width: 900px) {
+  .sidebar-overlay.active { display: block; }
+}
