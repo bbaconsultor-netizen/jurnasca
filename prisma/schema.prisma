@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CargoAutoridad {
+  PRESIDENTE
+  VICEPRESIDENTE
+  SECRETARIO
+  TESORERO
+  GERENTE
+  VOCAL
+}
+
+enum EstadoPeriodo {
+  VIGENTE
+  CONCLUIDO
+}
+
+enum EstadoTomaDeAgua {
+  ACTIVA
+  INACTIVA
+}
+
+model Junta {
+  id              String   @id @default(cuid())
+  razonSocial     String
+  ruc             String
+  domicilioFiscal String
+  marcoLegal      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model StaffUser {
+  id           String   @id @default(cuid())
+  nombre       String
+  username     String   @unique
+  passwordHash String
+  cargoInterno String
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PeriodoDirectivo {
+  id          String        @id @default(cuid())
+  fechaInicio DateTime
+  fechaFin    DateTime?
+  estado      EstadoPeriodo @default(VIGENTE)
+  autoridades Autoridad[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Autoridad {
+  id        String           @id @default(cuid())
+  periodoId String
+  periodo   PeriodoDirectivo @relation(fields: [periodoId], references: [id], onDelete: Cascade)
+  cargo     CargoAutoridad
+  nombre    String
+  dni       String
+  telefono  String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model Canal {
+  id        String       @id @default(cuid())
+  nombre    String
+  subsector String
+  tomas     TomaDeAgua[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model TomaDeAgua {
+  id        String           @id @default(cuid())
+  nombre    String
+  canalId   String
+  canal     Canal            @relation(fields: [canalId], references: [id], onDelete: Restrict)
+  caudalLps Float
+  ubicacion String?
+  estado    EstadoTomaDeAgua @default(ACTIVA)
+  parcelas  Parcela[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model Regante {
+  id               String    @id @default(cuid())
+  dni              String    @unique
+  codigoPadronHash String
+  nombres          String
+  apellidos        String
+  telefono         String?
+  direccion        String?
+  estadoHabil      Boolean   @default(true)
+  parcelas         Parcela[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Parcela {
+  id            String     @id @default(cuid())
+  reganteId     String
+  regante       Regante    @relation(fields: [reganteId], references: [id], onDelete: Cascade)
+  tomaDeAguaId  String
+  tomaDeAgua    TomaDeAgua @relation(fields: [tomaDeAguaId], references: [id], onDelete: Restrict)
+  areaHectareas Float
+  ubicacion     String?
+  cultivos      Cultivo[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Cultivo {
+  id           String    @id @default(cuid())
+  parcelaId    String
+  parcela      Parcela   @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
+  tipoCultivo  String
+  campana      String
+  fechaSiembra DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
