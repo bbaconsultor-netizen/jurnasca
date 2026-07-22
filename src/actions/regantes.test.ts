@@ -8,6 +8,10 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
 });

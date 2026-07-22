@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { reganteSchema } from "@/lib/validations/regante";
 import { generarCodigoPadron } from "@/lib/codigo-padron";
@@ -31,6 +32,7 @@ export async function crearRegante(
     const regante = await prisma.regante.create({
       data: { ...parsed.data, codigoPadronHash },
     });
+    revalidatePath("/staff/regantes");
     return { success: true, data: { regante, codigoPadronPlano } };
   } catch (error) {
     return { success: false, error: mapPrismaError(error) };
@@ -54,6 +56,8 @@ export async function actualizarEstadoHabil(
 ): Promise<ActionResult<Regante>> {
   try {
     const regante = await prisma.regante.update({ where: { id }, data: { estadoHabil } });
+    revalidatePath("/staff/regantes");
+    revalidatePath(`/staff/regantes/${id}`);
     return { success: true, data: regante };
   } catch (error) {
     return { success: false, error: mapPrismaError(error) };
