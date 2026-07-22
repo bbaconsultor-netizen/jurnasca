@@ -26,6 +26,7 @@ describe("autenticarStaff", () => {
       username: "ana",
       passwordHash: "hashed",
       cargoInterno: "Gerente",
+      perfil: "TESORERIA",
       activo: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -34,7 +35,7 @@ describe("autenticarStaff", () => {
 
     const result = await autenticarStaff("ana", "clave-correcta");
 
-    expect(result).toEqual({ id: "staff-1", name: "Ana Torres", role: "STAFF" });
+    expect(result).toEqual({ id: "staff-1", name: "Ana Torres", role: "STAFF", perfil: "TESORERIA" });
   });
 
   it("returns null when the account is inactive", async () => {
