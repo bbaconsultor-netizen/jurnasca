@@ -26,6 +26,39 @@ enum EstadoTomaDeAgua {
   INACTIVA
 }
 
+enum PerfilStaff {
+  ADMINISTRACION
+  TESORERIA
+  TECNICO
+}
+
+enum TipoDocumento {
+  DNI
+  RUC
+}
+
+enum TipoComite {
+  CANAL
+  POZO
+  MANANTIAL
+}
+
+enum EstadoConservacion {
+  BUENO
+  REGULAR
+  MALO
+}
+
+enum TipoRegistro {
+  MANTENIMIENTO
+  INCIDENCIA
+}
+
+enum EstadoRegistro {
+  PENDIENTE
+  RESUELTO
+}
+
 model Junta {
   id              String   @id @default(cuid())
   razonSocial     String
@@ -37,14 +70,64 @@ model Junta {
 }
 
 model StaffUser {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   nombre       String
-  username     String   @unique
+  username     String      @unique
   passwordHash String
   cargoInterno String
-  activo       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  perfil       PerfilStaff @default(ADMINISTRACION)
+  activo       Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Comision {
+  id        String   @id @default(cuid())
+  nombre    String
+  subsector String
+  comites   Comite[]
+  canales   Canal[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comite {
+  id         String     @id @default(cuid())
+  comisionId String
+  comision   Comision   @relation(fields: [comisionId], references: [id], onDelete: Restrict)
+  nombre     String
+  tipo       TipoComite
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Compuerta {
+  id                 String                  @id @default(cuid())
+  canalId            String
+  canal              Canal                   @relation(fields: [canalId], references: [id], onDelete: Cascade)
+  nombre             String
+  ubicacion          String?
+  caracteristicas    String?
+  estadoConservacion EstadoConservacion      @default(BUENO)
+  registros          RegistroMantenimiento[]
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+}
+
+model RegistroMantenimiento {
+  id           String         @id @default(cuid())
+  tipo         TipoRegistro
+  fecha        DateTime
+  descripcion  String
+  estado       EstadoRegistro @default(PENDIENTE)
+  canalId      String?
+  canal        Canal?         @relation(fields: [canalId], references: [id], onDelete: Cascade)
+  tomaDeAguaId String?
+  tomaDeAgua   TomaDeAgua?    @relation(fields: [tomaDeAguaId], references: [id], onDelete: Cascade)
+  compuertaId  String?
+  compuerta    Compuerta?     @relation(fields: [compuertaId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
 
 model PeriodoDirectivo {
@@ -70,30 +153,38 @@ model Autoridad {
 }
 
 model Canal {
-  id        String       @id @default(cuid())
-  nombre    String
-  subsector String
-  tomas     TomaDeAgua[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id                 String                  @id @default(cuid())
+  nombre             String
+  subsector          String
+  comisionId         String?
+  comision           Comision?               @relation(fields: [comisionId], references: [id], onDelete: Restrict)
+  estadoConservacion EstadoConservacion      @default(BUENO)
+  tomas              TomaDeAgua[]
+  compuertas         Compuerta[]
+  registros          RegistroMantenimiento[]
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
 }
 
 model TomaDeAgua {
-  id        String           @id @default(cuid())
-  nombre    String
-  canalId   String
-  canal     Canal            @relation(fields: [canalId], references: [id], onDelete: Restrict)
-  caudalLps Float
-  ubicacion String?
-  estado    EstadoTomaDeAgua @default(ACTIVA)
-  parcelas  Parcela[]
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id                 String                  @id @default(cuid())
+  nombre             String
+  canalId            String
+  canal              Canal                   @relation(fields: [canalId], references: [id], onDelete: Restrict)
+  caudalLps          Float
+  ubicacion          String?
+  estado             EstadoTomaDeAgua        @default(ACTIVA)
+  estadoConservacion EstadoConservacion      @default(BUENO)
+  parcelas           Parcela[]
+  registros          RegistroMantenimiento[]
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
 }
 
 model Regante {
-  id               String    @id @default(cuid())
-  dni              String    @unique
+  id               String        @id @default(cuid())
+  tipoDocumento    TipoDocumento @default(DNI)
+  numeroDocumento  String        @unique
   codigoPadronHash String
   nombres          String
   apellidos        String

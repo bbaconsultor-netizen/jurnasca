@@ -14,6 +14,7 @@ async function main() {
       username: "admin",
       passwordHash,
       cargoInterno: "Administrador del sistema",
+      perfil: "ADMINISTRACION",
     },
   });
 
