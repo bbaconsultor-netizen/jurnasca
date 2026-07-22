@@ -1,4 +1,8 @@
 .superpowers/
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
@@ -43,5 +47,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-/src/generated/prisma
