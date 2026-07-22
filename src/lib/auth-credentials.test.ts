@@ -78,7 +78,7 @@ describe("autenticarRegante", () => {
   it("returns the user when DNI and código match", async () => {
     vi.mocked(prisma.regante.findUnique).mockResolvedValue({
       id: "regante-1",
-      dni: "12345678",
+      numeroDocumento: "12345678",
       codigoPadronHash: "hashed",
       nombres: "Juan",
       apellidos: "Pérez",

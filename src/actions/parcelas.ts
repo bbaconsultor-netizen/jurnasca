@@ -5,12 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { parcelaSchema } from "@/lib/validations/parcela";
 import { cultivoSchema } from "@/lib/validations/cultivo";
 import { mapPrismaError } from "@/lib/prisma-errors";
-import { requireStaff } from "@/lib/require-staff";
+import { requirePerfil } from "@/lib/require-staff";
 import type { ActionResult } from "@/lib/action-result";
 import type { Parcela, Cultivo } from "@prisma/client";
 
 export async function crearParcela(formData: FormData): Promise<ActionResult<Parcela>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const raw = {
@@ -35,7 +35,7 @@ export async function crearParcela(formData: FormData): Promise<ActionResult<Par
 }
 
 export async function crearCultivo(formData: FormData): Promise<ActionResult<Cultivo>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const raw = {

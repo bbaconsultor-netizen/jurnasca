@@ -24,7 +24,7 @@ export default async function ReganteDetailPage({ params }: { params: Promise<{ 
         {regante.nombres} {regante.apellidos}
       </h1>
       <p className="mb-2 text-gray-600">
-        DNI: {regante.dni} — {regante.estadoHabil ? "Hábil" : "No hábil"}
+        {regante.tipoDocumento}: {regante.numeroDocumento} — {regante.estadoHabil ? "Hábil" : "No hábil"}
       </p>
       <form action={handleToggleEstadoHabil} className="mb-6">
         <button type="submit" className="text-sm text-blue-600 underline">

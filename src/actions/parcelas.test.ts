@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { crearParcela, crearCultivo } from "./parcelas";
 import { prisma } from "@/lib/prisma";
-import { requireStaff } from "@/lib/require-staff";
+import { requirePerfil } from "@/lib/require-staff";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -15,12 +15,12 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/require-staff", () => ({
-  requireStaff: vi.fn(),
+  requirePerfil: vi.fn(),
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(requireStaff).mockResolvedValue({ ok: true });
+  vi.mocked(requirePerfil).mockResolvedValue({ ok: true });
 });
 
 function buildFormData(fields: Record<string, string>): FormData {
@@ -66,7 +66,7 @@ describe("crearParcela", () => {
   });
 
   it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
-    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+    vi.mocked(requirePerfil).mockResolvedValue({ ok: false, error: "No autorizado." });
 
     const formData = buildFormData({
       reganteId: "regante-1",
@@ -83,7 +83,7 @@ describe("crearParcela", () => {
 
 describe("crearCultivo", () => {
   it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
-    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+    vi.mocked(requirePerfil).mockResolvedValue({ ok: false, error: "No autorizado." });
 
     const formData = buildFormData({
       parcelaId: "parcela-1",

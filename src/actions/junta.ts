@@ -5,14 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { periodoDirectivoSchema } from "@/lib/validations/periodo-directivo";
 import { autoridadSchema } from "@/lib/validations/autoridad";
 import { mapPrismaError } from "@/lib/prisma-errors";
-import { requireStaff } from "@/lib/require-staff";
+import { requirePerfil } from "@/lib/require-staff";
 import type { ActionResult } from "@/lib/action-result";
 import type { PeriodoDirectivo, Autoridad } from "@prisma/client";
 
 export async function abrirPeriodoDirectivo(
   formData: FormData
 ): Promise<ActionResult<PeriodoDirectivo>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const raw = { fechaInicio: formData.get("fechaInicio")?.toString() ?? "" };
@@ -33,7 +33,7 @@ export async function abrirPeriodoDirectivo(
 }
 
 export async function agregarAutoridad(formData: FormData): Promise<ActionResult<Autoridad>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const raw = {
@@ -61,7 +61,7 @@ export async function agregarAutoridad(formData: FormData): Promise<ActionResult
 export async function cerrarPeriodoDirectivo(
   periodoId: string
 ): Promise<ActionResult<PeriodoDirectivo>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const periodo = await prisma.periodoDirectivo.findUnique({ where: { id: periodoId } });

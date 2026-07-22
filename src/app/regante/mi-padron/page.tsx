@@ -21,7 +21,7 @@ export default async function MiPadronPage() {
         <strong>Nombre:</strong> {regante.nombres} {regante.apellidos}
       </p>
       <p>
-        <strong>DNI:</strong> {regante.dni}
+        <strong>{regante.tipoDocumento}:</strong> {regante.numeroDocumento}
       </p>
       <p>
         <strong>Estado:</strong> {regante.estadoHabil ? "Hábil" : "No hábil"}

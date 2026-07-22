@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { cerrarPeriodoDirectivo, abrirPeriodoDirectivo, agregarAutoridad } from "./junta";
 import { prisma } from "@/lib/prisma";
-import { requireStaff } from "@/lib/require-staff";
+import { requirePerfil } from "@/lib/require-staff";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -15,7 +15,7 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/require-staff", () => ({
-  requireStaff: vi.fn(),
+  requirePerfil: vi.fn(),
 }));
 
 function buildFormData(fields: Record<string, string>): FormData {
@@ -28,7 +28,7 @@ function buildFormData(fields: Record<string, string>): FormData {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(requireStaff).mockResolvedValue({ ok: true });
+  vi.mocked(requirePerfil).mockResolvedValue({ ok: true });
 });
 
 describe("cerrarPeriodoDirectivo", () => {
@@ -76,7 +76,7 @@ describe("cerrarPeriodoDirectivo", () => {
   });
 
   it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
-    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+    vi.mocked(requirePerfil).mockResolvedValue({ ok: false, error: "No autorizado." });
 
     const result = await cerrarPeriodoDirectivo("periodo-1");
 
@@ -88,7 +88,7 @@ describe("cerrarPeriodoDirectivo", () => {
 
 describe("abrirPeriodoDirectivo", () => {
   it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
-    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+    vi.mocked(requirePerfil).mockResolvedValue({ ok: false, error: "No autorizado." });
 
     const formData = buildFormData({ fechaInicio: "2026-01-01" });
 
@@ -101,7 +101,7 @@ describe("abrirPeriodoDirectivo", () => {
 
 describe("agregarAutoridad", () => {
   it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
-    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+    vi.mocked(requirePerfil).mockResolvedValue({ ok: false, error: "No autorizado." });
 
     const formData = buildFormData({
       periodoId: "periodo-1",

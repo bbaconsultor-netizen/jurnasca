@@ -49,7 +49,7 @@ export default function LoginPage() {
             Regante
           </button>
         </div>
-        <label className="mb-1 block text-sm">{tipo === "staff" ? "Usuario" : "DNI"}</label>
+        <label className="mb-1 block text-sm">{tipo === "staff" ? "Usuario" : "DNI o RUC"}</label>
         <input
           className="mb-4 w-full rounded border px-3 py-2"
           value={identificador}

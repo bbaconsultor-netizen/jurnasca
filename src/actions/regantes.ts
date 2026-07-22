@@ -6,18 +6,19 @@ import { reganteSchema } from "@/lib/validations/regante";
 import { generarCodigoPadron } from "@/lib/codigo-padron";
 import { hash } from "@/lib/crypto";
 import { mapPrismaError } from "@/lib/prisma-errors";
-import { requireStaff } from "@/lib/require-staff";
+import { requirePerfil } from "@/lib/require-staff";
 import type { ActionResult } from "@/lib/action-result";
 import type { Regante } from "@prisma/client";
 
 export async function crearRegante(
   formData: FormData
 ): Promise<ActionResult<{ regante: Regante; codigoPadronPlano: string }>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const raw = {
-    dni: formData.get("dni")?.toString() ?? "",
+    tipoDocumento: formData.get("tipoDocumento")?.toString() ?? "DNI",
+    numeroDocumento: formData.get("numeroDocumento")?.toString() ?? "",
     nombres: formData.get("nombres")?.toString() ?? "",
     apellidos: formData.get("apellidos")?.toString() ?? "",
     telefono: formData.get("telefono")?.toString() || undefined,
@@ -47,7 +48,7 @@ export async function actualizarEstadoHabil(
   id: string,
   estadoHabil: boolean
 ): Promise<ActionResult<Regante>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION");
   if (!auth.ok) return { success: false, error: auth.error };
 
   try {

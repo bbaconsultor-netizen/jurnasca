@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { crearRegante, actualizarEstadoHabil } from "./regantes";
 import { prisma } from "@/lib/prisma";
-import { requireStaff } from "@/lib/require-staff";
+import { requirePerfil } from "@/lib/require-staff";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -14,12 +14,12 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/require-staff", () => ({
-  requireStaff: vi.fn(),
+  requirePerfil: vi.fn(),
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(requireStaff).mockResolvedValue({ ok: true });
+  vi.mocked(requirePerfil).mockResolvedValue({ ok: true });
 });
 
 function buildFormData(fields: Record<string, string>): FormData {
@@ -32,7 +32,7 @@ function buildFormData(fields: Record<string, string>): FormData {
 
 describe("crearRegante", () => {
   it("returns a validation error for an invalid DNI", async () => {
-    const formData = buildFormData({ dni: "123", nombres: "Juan", apellidos: "Pérez" });
+    const formData = buildFormData({ tipoDocumento: "DNI", numeroDocumento: "123", nombres: "Juan", apellidos: "Pérez" });
 
     const result = await crearRegante(formData);
 
@@ -43,7 +43,7 @@ describe("crearRegante", () => {
   it("creates the regante and returns the plaintext código once", async () => {
     vi.mocked(prisma.regante.create).mockResolvedValue({
       id: "regante-1",
-      dni: "12345678",
+      numeroDocumento: "12345678",
       codigoPadronHash: "hashed",
       nombres: "Juan",
       apellidos: "Pérez",
@@ -54,13 +54,13 @@ describe("crearRegante", () => {
       updatedAt: new Date(),
     } as never);
 
-    const formData = buildFormData({ dni: "12345678", nombres: "Juan", apellidos: "Pérez" });
+    const formData = buildFormData({ tipoDocumento: "DNI", numeroDocumento: "12345678", nombres: "Juan", apellidos: "Pérez" });
 
     const result = await crearRegante(formData);
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.regante.dni).toBe("12345678");
+      expect(result.data.regante.numeroDocumento).toBe("12345678");
       expect(result.data.codigoPadronPlano).toHaveLength(6);
 
       // Assert that the hashed código was passed to create, not the plaintext
@@ -76,24 +76,24 @@ describe("crearRegante", () => {
       new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
         code: "P2002",
         clientVersion: "5.0.0",
-        meta: { target: ["dni"] },
+        meta: { target: ["numeroDocumento"] },
       })
     );
 
-    const formData = buildFormData({ dni: "12345678", nombres: "Juan", apellidos: "Pérez" });
+    const formData = buildFormData({ tipoDocumento: "DNI", numeroDocumento: "12345678", nombres: "Juan", apellidos: "Pérez" });
 
     const result = await crearRegante(formData);
 
     expect(result).toEqual({
       success: false,
-      error: "Ya existe un registro con ese valor en: dni",
+      error: "Ya existe un registro con ese valor en: numeroDocumento",
     });
   });
 
   it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
-    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+    vi.mocked(requirePerfil).mockResolvedValue({ ok: false, error: "No autorizado." });
 
-    const formData = buildFormData({ dni: "12345678", nombres: "Juan", apellidos: "Pérez" });
+    const formData = buildFormData({ tipoDocumento: "DNI", numeroDocumento: "12345678", nombres: "Juan", apellidos: "Pérez" });
 
     const result = await crearRegante(formData);
 
@@ -104,7 +104,7 @@ describe("crearRegante", () => {
 
 describe("actualizarEstadoHabil", () => {
   it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
-    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+    vi.mocked(requirePerfil).mockResolvedValue({ ok: false, error: "No autorizado." });
 
     const result = await actualizarEstadoHabil("regante-1", false);
 
@@ -115,7 +115,7 @@ describe("actualizarEstadoHabil", () => {
   it("updates estadoHabil when the session is STAFF", async () => {
     vi.mocked(prisma.regante.update).mockResolvedValue({
       id: "regante-1",
-      dni: "12345678",
+      numeroDocumento: "12345678",
       codigoPadronHash: "hashed",
       nombres: "Juan",
       apellidos: "Pérez",

@@ -26,7 +26,16 @@ export function NuevaReganteForm() {
   return (
     <div className="mb-6 rounded border p-4">
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
-        <input name="dni" placeholder="DNI" className="rounded border px-3 py-2" required />
+        <select name="tipoDocumento" className="rounded border px-3 py-2" defaultValue="DNI">
+          <option value="DNI">DNI</option>
+          <option value="RUC">RUC</option>
+        </select>
+        <input
+          name="numeroDocumento"
+          placeholder="Número de documento"
+          className="rounded border px-3 py-2"
+          required
+        />
         <input name="nombres" placeholder="Nombres" className="rounded border px-3 py-2" required />
         <input name="apellidos" placeholder="Apellidos" className="rounded border px-3 py-2" required />
         <input name="telefono" placeholder="Teléfono (opcional)" className="rounded border px-3 py-2" />

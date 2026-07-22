@@ -5,12 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { canalSchema } from "@/lib/validations/canal";
 import { tomaDeAguaSchema } from "@/lib/validations/toma-de-agua";
 import { mapPrismaError } from "@/lib/prisma-errors";
-import { requireStaff } from "@/lib/require-staff";
+import { requirePerfil } from "@/lib/require-staff";
 import type { ActionResult } from "@/lib/action-result";
 import type { Canal, TomaDeAgua } from "@prisma/client";
 
 export async function crearCanal(formData: FormData): Promise<ActionResult<Canal>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION", "TECNICO");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const raw = {
@@ -33,7 +33,7 @@ export async function crearCanal(formData: FormData): Promise<ActionResult<Canal
 }
 
 export async function crearTomaDeAgua(formData: FormData): Promise<ActionResult<TomaDeAgua>> {
-  const auth = await requireStaff();
+  const auth = await requirePerfil("ADMINISTRACION", "TECNICO");
   if (!auth.ok) return { success: false, error: auth.error };
 
   const raw = {

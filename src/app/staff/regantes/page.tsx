@@ -21,7 +21,7 @@ export default async function RegantesPage() {
         <tbody>
           {regantes.map((r) => (
             <tr key={r.id} className="border-b">
-              <td className="p-2">{r.dni}</td>
+              <td className="p-2">{r.numeroDocumento}</td>
               <td className="p-2">
                 {r.nombres} {r.apellidos}
               </td>

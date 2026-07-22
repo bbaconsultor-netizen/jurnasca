@@ -16,8 +16,11 @@ export async function autenticarStaff(username: string, clave: string): Promise<
   return { id: staffUser.id, name: staffUser.nombre, role: "STAFF", perfil: staffUser.perfil };
 }
 
-export async function autenticarRegante(dni: string, clave: string): Promise<AuthUser | null> {
-  const regante = await prisma.regante.findUnique({ where: { dni } });
+export async function autenticarRegante(
+  numeroDocumento: string,
+  clave: string
+): Promise<AuthUser | null> {
+  const regante = await prisma.regante.findUnique({ where: { numeroDocumento } });
   if (!regante) return null;
   const valido = await verificar(clave, regante.codigoPadronHash);
   if (!valido) return null;
