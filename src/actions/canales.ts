@@ -16,6 +16,7 @@ export async function crearCanal(formData: FormData): Promise<ActionResult<Canal
   const raw = {
     nombre: formData.get("nombre")?.toString() ?? "",
     subsector: formData.get("subsector")?.toString() ?? "",
+    comisionId: formData.get("comisionId")?.toString() || undefined,
   };
 
   const parsed = canalSchema.safeParse(raw);

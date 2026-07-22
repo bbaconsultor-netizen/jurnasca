@@ -4,7 +4,9 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { crearCanal } from "@/actions/canales";
 
-export function NuevoCanalForm() {
+type ComisionOption = { id: string; nombre: string };
+
+export function NuevoCanalForm({ comisiones }: { comisiones: ComisionOption[] }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -25,6 +27,14 @@ export function NuevoCanalForm() {
     <form onSubmit={handleSubmit} className="mb-4 flex gap-2 rounded border p-4">
       <input name="nombre" placeholder="Nombre del canal" className="rounded border px-3 py-2" required />
       <input name="subsector" placeholder="Subsector" className="rounded border px-3 py-2" required />
+      <select name="comisionId" className="rounded border px-3 py-2" defaultValue="">
+        <option value="">Sin comisión</option>
+        {comisiones.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.nombre}
+          </option>
+        ))}
+      </select>
       <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-white">
         Crear canal
       </button>
