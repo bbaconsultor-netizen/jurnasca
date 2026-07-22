@@ -1,4 +1,4 @@
-import { listarCanales } from "@/actions/canales";
+import { listarCanales } from "@/actions/canales-queries";
 import { NuevoCanalForm } from "./nuevo-canal-form";
 import { NuevaTomaForm } from "./nueva-toma-form";
 

@@ -1,4 +1,5 @@
-import { obtenerJunta, listarPeriodos, abrirPeriodoDirectivo, cerrarPeriodoDirectivo } from "@/actions/junta";
+import { obtenerJunta, listarPeriodos } from "@/actions/junta-queries";
+import { abrirPeriodoDirectivo, cerrarPeriodoDirectivo } from "@/actions/junta";
 import { NuevaAutoridadForm } from "./nueva-autoridad-form";
 
 export default async function JuntaPage() {

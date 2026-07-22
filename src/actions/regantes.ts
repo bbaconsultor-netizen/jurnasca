@@ -6,12 +6,16 @@ import { reganteSchema } from "@/lib/validations/regante";
 import { generarCodigoPadron } from "@/lib/codigo-padron";
 import { hash } from "@/lib/crypto";
 import { mapPrismaError } from "@/lib/prisma-errors";
+import { requireStaff } from "@/lib/require-staff";
 import type { ActionResult } from "@/lib/action-result";
 import type { Regante } from "@prisma/client";
 
 export async function crearRegante(
   formData: FormData
 ): Promise<ActionResult<{ regante: Regante; codigoPadronPlano: string }>> {
+  const auth = await requireStaff();
+  if (!auth.ok) return { success: false, error: auth.error };
+
   const raw = {
     dni: formData.get("dni")?.toString() ?? "",
     nombres: formData.get("nombres")?.toString() ?? "",
@@ -39,21 +43,13 @@ export async function crearRegante(
   }
 }
 
-export async function listarRegantes(): Promise<Regante[]> {
-  return prisma.regante.findMany({ orderBy: { apellidos: "asc" } });
-}
-
-export async function obtenerRegante(id: string) {
-  return prisma.regante.findUnique({
-    where: { id },
-    include: { parcelas: { include: { cultivos: true, tomaDeAgua: true } } },
-  });
-}
-
 export async function actualizarEstadoHabil(
   id: string,
   estadoHabil: boolean
 ): Promise<ActionResult<Regante>> {
+  const auth = await requireStaff();
+  if (!auth.ok) return { success: false, error: auth.error };
+
   try {
     const regante = await prisma.regante.update({ where: { id }, data: { estadoHabil } });
     revalidatePath("/staff/regantes");

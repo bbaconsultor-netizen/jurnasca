@@ -5,10 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { canalSchema } from "@/lib/validations/canal";
 import { tomaDeAguaSchema } from "@/lib/validations/toma-de-agua";
 import { mapPrismaError } from "@/lib/prisma-errors";
+import { requireStaff } from "@/lib/require-staff";
 import type { ActionResult } from "@/lib/action-result";
 import type { Canal, TomaDeAgua } from "@prisma/client";
 
 export async function crearCanal(formData: FormData): Promise<ActionResult<Canal>> {
+  const auth = await requireStaff();
+  if (!auth.ok) return { success: false, error: auth.error };
+
   const raw = {
     nombre: formData.get("nombre")?.toString() ?? "",
     subsector: formData.get("subsector")?.toString() ?? "",
@@ -29,6 +33,9 @@ export async function crearCanal(formData: FormData): Promise<ActionResult<Canal
 }
 
 export async function crearTomaDeAgua(formData: FormData): Promise<ActionResult<TomaDeAgua>> {
+  const auth = await requireStaff();
+  if (!auth.ok) return { success: false, error: auth.error };
+
   const raw = {
     nombre: formData.get("nombre")?.toString() ?? "",
     canalId: formData.get("canalId")?.toString() ?? "",
@@ -48,8 +55,4 @@ export async function crearTomaDeAgua(formData: FormData): Promise<ActionResult<
   } catch (error) {
     return { success: false, error: mapPrismaError(error) };
   }
-}
-
-export async function listarCanales() {
-  return prisma.canal.findMany({ include: { tomas: true }, orderBy: { nombre: "asc" } });
 }

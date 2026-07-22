@@ -1,15 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { crearParcela } from "./parcelas";
+import { crearParcela, crearCultivo } from "./parcelas";
 import { prisma } from "@/lib/prisma";
+import { requireStaff } from "@/lib/require-staff";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     parcela: { create: vi.fn() },
+    cultivo: { create: vi.fn() },
   },
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
+vi.mock("@/lib/require-staff", () => ({
+  requireStaff: vi.fn(),
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(requireStaff).mockResolvedValue({ ok: true });
 });
 
 function buildFormData(fields: Record<string, string>): FormData {
@@ -52,5 +63,37 @@ describe("crearParcela", () => {
     const result = await crearParcela(formData);
 
     expect(result).toEqual({ success: false, error: "La referencia seleccionada no existe." });
+  });
+
+  it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
+    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+
+    const formData = buildFormData({
+      reganteId: "regante-1",
+      tomaDeAguaId: "toma-1",
+      areaHectareas: "2.5",
+    });
+
+    const result = await crearParcela(formData);
+
+    expect(result).toEqual({ success: false, error: "No autorizado." });
+    expect(prisma.parcela.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("crearCultivo", () => {
+  it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
+    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+
+    const formData = buildFormData({
+      parcelaId: "parcela-1",
+      tipoCultivo: "Maíz",
+      campana: "2026-I",
+    });
+
+    const result = await crearCultivo(formData);
+
+    expect(result).toEqual({ success: false, error: "No autorizado." });
+    expect(prisma.cultivo.create).not.toHaveBeenCalled();
   });
 });

@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { crearRegante } from "./regantes";
+import { crearRegante, actualizarEstadoHabil } from "./regantes";
 import { prisma } from "@/lib/prisma";
+import { requireStaff } from "@/lib/require-staff";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    regante: { create: vi.fn() },
+    regante: { create: vi.fn(), update: vi.fn() },
   },
 }));
 
@@ -12,8 +13,13 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock("@/lib/require-staff", () => ({
+  requireStaff: vi.fn(),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(requireStaff).mockResolvedValue({ ok: true });
 });
 
 function buildFormData(fields: Record<string, string>): FormData {
@@ -81,6 +87,51 @@ describe("crearRegante", () => {
     expect(result).toEqual({
       success: false,
       error: "Ya existe un registro con ese valor en: dni",
+    });
+  });
+
+  it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
+    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+
+    const formData = buildFormData({ dni: "12345678", nombres: "Juan", apellidos: "Pérez" });
+
+    const result = await crearRegante(formData);
+
+    expect(result).toEqual({ success: false, error: "No autorizado." });
+    expect(prisma.regante.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("actualizarEstadoHabil", () => {
+  it("returns 'No autorizado.' and does not call Prisma when the session is not STAFF", async () => {
+    vi.mocked(requireStaff).mockResolvedValue({ ok: false, error: "No autorizado." });
+
+    const result = await actualizarEstadoHabil("regante-1", false);
+
+    expect(result).toEqual({ success: false, error: "No autorizado." });
+    expect(prisma.regante.update).not.toHaveBeenCalled();
+  });
+
+  it("updates estadoHabil when the session is STAFF", async () => {
+    vi.mocked(prisma.regante.update).mockResolvedValue({
+      id: "regante-1",
+      dni: "12345678",
+      codigoPadronHash: "hashed",
+      nombres: "Juan",
+      apellidos: "Pérez",
+      telefono: null,
+      direccion: null,
+      estadoHabil: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as never);
+
+    const result = await actualizarEstadoHabil("regante-1", false);
+
+    expect(result.success).toBe(true);
+    expect(prisma.regante.update).toHaveBeenCalledWith({
+      where: { id: "regante-1" },
+      data: { estadoHabil: false },
     });
   });
 });

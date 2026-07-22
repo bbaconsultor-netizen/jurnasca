@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listarRegantes } from "@/actions/regantes";
+import { listarRegantes } from "@/actions/regantes-queries";
 import { NuevaReganteForm } from "./nueva-regante-form";
 
 export default async function RegantesPage() {

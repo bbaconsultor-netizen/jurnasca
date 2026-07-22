@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { obtenerRegante } from "@/actions/regantes";
+import { obtenerRegante } from "@/actions/regantes-queries";
 
 export default async function MiPadronPage() {
   const session = await getServerSession(authOptions);
