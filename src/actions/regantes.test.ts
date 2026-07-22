@@ -52,6 +52,11 @@ describe("crearRegante", () => {
     if (result.success) {
       expect(result.data.regante.dni).toBe("12345678");
       expect(result.data.codigoPadronPlano).toHaveLength(6);
+
+      // Assert that the hashed código was passed to create, not the plaintext
+      const createOptions = vi.mocked(prisma.regante.create).mock.calls[0][0];
+      expect(createOptions.data).toHaveProperty("codigoPadronHash");
+      expect(createOptions.data.codigoPadronHash).not.toBe(result.data.codigoPadronPlano);
     }
   });
 
