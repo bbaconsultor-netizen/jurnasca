@@ -12,7 +12,7 @@ export default async function RegantesPage() {
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b text-left">
-            <th className="p-2">DNI</th>
+            <th className="p-2">Documento</th>
             <th className="p-2">Nombre</th>
             <th className="p-2">Estado</th>
             <th className="p-2"></th>

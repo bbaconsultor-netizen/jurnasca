@@ -67,3 +67,57 @@ export async function crearCultivo(formData: FormData): Promise<ActionResult<Cul
     return { success: false, error: mapPrismaError(error) };
   }
 }
+
+export async function actualizarParcela(
+  id: string,
+  formData: FormData
+): Promise<ActionResult<Parcela>> {
+  const auth = await requirePerfil("ADMINISTRACION");
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const raw = {
+    reganteId: formData.get("reganteId")?.toString() ?? "",
+    tomaDeAguaId: formData.get("tomaDeAguaId")?.toString() ?? "",
+    areaHectareas: formData.get("areaHectareas")?.toString() ?? "",
+    ubicacion: formData.get("ubicacion")?.toString() || undefined,
+  };
+
+  const parsed = parcelaSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  try {
+    const parcela = await prisma.parcela.update({ where: { id }, data: parsed.data });
+    revalidatePath(`/staff/regantes/${parsed.data.reganteId}`);
+    return { success: true, data: parcela };
+  } catch (error) {
+    return { success: false, error: mapPrismaError(error) };
+  }
+}
+
+export async function eliminarParcela(id: string): Promise<ActionResult<null>> {
+  const auth = await requirePerfil("ADMINISTRACION");
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  try {
+    await prisma.parcela.delete({ where: { id } });
+    revalidatePath("/staff/regantes/[id]", "page");
+    return { success: true, data: null };
+  } catch (error) {
+    return { success: false, error: mapPrismaError(error) };
+  }
+}
+
+export async function eliminarCultivo(id: string): Promise<ActionResult<null>> {
+  const auth = await requirePerfil("ADMINISTRACION");
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  try {
+    await prisma.cultivo.delete({ where: { id } });
+    revalidatePath("/staff/regantes/[id]", "page");
+    return { success: true, data: null };
+  } catch (error) {
+    return { success: false, error: mapPrismaError(error) };
+  }
+}
