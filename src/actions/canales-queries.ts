@@ -4,5 +4,8 @@
 import { prisma } from "@/lib/prisma";
 
 export async function listarCanales() {
-  return prisma.canal.findMany({ include: { tomas: true, comision: true }, orderBy: { nombre: "asc" } });
+  return prisma.canal.findMany({
+    include: { tomas: true, comision: true, compuertas: true },
+    orderBy: { nombre: "asc" },
+  });
 }

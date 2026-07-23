@@ -57,3 +57,83 @@ export async function crearTomaDeAgua(formData: FormData): Promise<ActionResult<
     return { success: false, error: mapPrismaError(error) };
   }
 }
+
+export async function actualizarCanal(id: string, formData: FormData): Promise<ActionResult<Canal>> {
+  const auth = await requirePerfil("ADMINISTRACION", "TECNICO");
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const raw = {
+    nombre: formData.get("nombre")?.toString() ?? "",
+    subsector: formData.get("subsector")?.toString() ?? "",
+    comisionId: formData.get("comisionId")?.toString() || undefined,
+    estadoConservacion: formData.get("estadoConservacion")?.toString() || undefined,
+  };
+
+  const parsed = canalSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  try {
+    const canal = await prisma.canal.update({ where: { id }, data: parsed.data });
+    revalidatePath("/staff/canales");
+    return { success: true, data: canal };
+  } catch (error) {
+    return { success: false, error: mapPrismaError(error) };
+  }
+}
+
+export async function eliminarCanal(id: string): Promise<ActionResult<null>> {
+  const auth = await requirePerfil("ADMINISTRACION", "TECNICO");
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  try {
+    await prisma.canal.delete({ where: { id } });
+    revalidatePath("/staff/canales");
+    return { success: true, data: null };
+  } catch (error) {
+    return { success: false, error: mapPrismaError(error) };
+  }
+}
+
+export async function actualizarTomaDeAgua(
+  id: string,
+  formData: FormData
+): Promise<ActionResult<TomaDeAgua>> {
+  const auth = await requirePerfil("ADMINISTRACION", "TECNICO");
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const raw = {
+    nombre: formData.get("nombre")?.toString() ?? "",
+    canalId: formData.get("canalId")?.toString() ?? "",
+    caudalLps: formData.get("caudalLps")?.toString() ?? "",
+    ubicacion: formData.get("ubicacion")?.toString() || undefined,
+    estadoConservacion: formData.get("estadoConservacion")?.toString() || undefined,
+  };
+
+  const parsed = tomaDeAguaSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  try {
+    const toma = await prisma.tomaDeAgua.update({ where: { id }, data: parsed.data });
+    revalidatePath("/staff/canales");
+    return { success: true, data: toma };
+  } catch (error) {
+    return { success: false, error: mapPrismaError(error) };
+  }
+}
+
+export async function eliminarTomaDeAgua(id: string): Promise<ActionResult<null>> {
+  const auth = await requirePerfil("ADMINISTRACION", "TECNICO");
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  try {
+    await prisma.tomaDeAgua.delete({ where: { id } });
+    revalidatePath("/staff/canales");
+    return { success: true, data: null };
+  } catch (error) {
+    return { success: false, error: mapPrismaError(error) };
+  }
+}
