@@ -57,7 +57,7 @@ export async function CanalCard({
       <ul className="mt-1 list-disc pl-5 text-sm">
         {canal.tomas.map((toma) => (
           <li key={toma.id}>
-            {toma.nombre}: {toma.caudalLps} l/s ({toma.estado})
+            {toma.nombre}: {toma.caudalLps} l/s ({toma.estado} — {toma.estadoConservacion})
             <EditarTomaForm toma={toma} canalId={canal.id} />
           </li>
         ))}
