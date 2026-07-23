@@ -3,10 +3,14 @@
 // return codigoPadronHash and full PII (bypassing any UI), so they are consumed only from
 // Server Components.
 import { prisma } from "@/lib/prisma";
+import { construirFiltroRegantes, type FiltrosRegante } from "@/lib/validations/regante-filtros";
 import type { Regante } from "@prisma/client";
 
-export async function listarRegantes(): Promise<Regante[]> {
-  return prisma.regante.findMany({ orderBy: { apellidos: "asc" } });
+export async function listarRegantes(filtros: FiltrosRegante = {}): Promise<Regante[]> {
+  return prisma.regante.findMany({
+    where: construirFiltroRegantes(filtros),
+    orderBy: { apellidos: "asc" },
+  });
 }
 
 export async function obtenerRegante(id: string) {
